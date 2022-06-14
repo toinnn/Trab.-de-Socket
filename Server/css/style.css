@@ -1,0 +1,23 @@
+#msg{
+
+    background-color: aqua;
+
+}
+body{
+    background-color :blueviolet;
+
+}
+.game-board{
+
+    width: 90%;
+    border: 1px solid #333;
+    height: 500px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.pipe{
+    width : 80px;
+    position: absolute;
+    bottom: 0;
+}
