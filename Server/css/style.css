@@ -1,23 +1,46 @@
+*{
+    margin : 0 ;
+    padding : 0;
+    box-sizing:border-box;
+}
 #msg{
 
-    background-color: aqua;
+    background-color:chartreuse;
 
 }
 body{
     background-color :blueviolet;
-
 }
+
 .game-board{
 
-    width: 90%;
+    width: 50%;
     border: 1px solid #333;
     height: 500px;
     margin: 0 auto;
     position: relative;
+    overflow: hidden;
 }
-
 .pipe{
     width : 80px;
     position: absolute;
     bottom: 0;
+    /* left : 80px; */
+    animation: pipe_move 2.5s infinite linear;
+    
+}
+.mario{
+    position: absolute;
+    bottom: 0;
+    width : 150px;
+}
+
+@keyframes pipe_move{
+
+    from {
+        right : -80px;
+    }to{
+        right : 100%;
+    }
+
 }
