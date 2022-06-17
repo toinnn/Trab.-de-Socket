@@ -1,35 +1,39 @@
 from socket import *
 import threading
 
-server_Name = gethostbyname(gethostname())
-server_Port = 12000
+
 # addr = ()
-print(server_Name)
+
 class server_skt():
-    def __init__(self) -> None:
+    def __init__(self , server_Name = gethostbyname(gethostname()) , server_Port = 12000) -> None:
         self.skt_Server  = socket(AF_INET , SOCK_STREAM)
         self.skt_Server.bind((server_Name , server_Port))
         self.skt_Server.listen(1)
-        print("Server Ligado")
+        
+        print("Server Ligado ", server_Name )
     
     def handle_request(self , connection , addr):
         print("[NOVA Conexão..]")
-        # global conexoes
-        # name = False
 
         while True :
             msg = connection.recv(1024).decode('utf-8')
             if msg :
+                print(msg)
                 cmd_request = msg.split(' ')
                 method = cmd_request[0]
-                args = cmd_request[1:]
+                args = [cmd_request[1]]
                 print('Client request ',args)
-                try :
-                    for i in args:
+                for i in args:
+                    response = ""
+                    header   = ""
+                    i = i.lstrip('/')
+                    try :
+                        print("Vai Abrir o ark ",i)
                         file = open(i,"rb")
+                        print("Abriu o ark")
                         response = file.read()
                         file.close()
-
+                        
                         header = 'HTTP/1.1 200 OK\n'
                         if i.endswith(".png"):
                             header += f"Content-Type: image/png"+"\n\n"
@@ -39,20 +43,27 @@ class server_skt():
                             header += f"Content-Type: text/css"+"\n\n"
                         else:
                             header += f"Content-Type: text/html"+"\n\n"
+                        header = header.encode('utf-8')
+                        print("Achou")
+                    except Exception as e:
+                        print("Não achou")
+                        header   = 'HTTP/1.1 404 Not Found\n\n'.encode('utf-8')
+                        response = '<html><body><center><h3>Error 404: File not found</h3><p>Python HTTP Server</p></center></body></html>'.encode('utf-8')
 
-                except Exception as e:
-                    header   = 'HTTP/1.1 404 Not Found\n\n'
-                    response = '<html><body><center><h3>Error 404: File not found</h3><p>Python HTTP Server</p></center></body></html>'.encode('utf-8')
-
-                final_response  = header.encode('utf-8')
-                final_response += response
-                connection.send(final_response)
+                    final_response  = header
+                    final_response += response#.decode('utf-8')
+                    connection.send(final_response)#.encode('utf-8'))
                 connection.close()
                 return
 
     def start_server(self):
-        listen()
+        # listen()
         print("[Server Ouvindo...]")
         while True:
-            client = accept()
-            td = threading.Thread(target = self.handle_request , args=client)
+            client , addr = self.skt_Server.accept()
+            print("Chega aki")
+            td = threading.Thread(target = self.handle_request , args=(client, addr))
+            td.start()
+
+server = server_skt()
+server.start_server()

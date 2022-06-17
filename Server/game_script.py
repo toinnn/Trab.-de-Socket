@@ -57,7 +57,7 @@ class game():
             var =js.window.getComputedStyle( mario).bottom
             pyscript.write('msg',var[:-2])
             self.velocity = -110
-        else   :
+        else   : 
             #INICIA UMA PARTIDA
             self.velocity = -110
             buttom_jump.textContent = "Jump"
