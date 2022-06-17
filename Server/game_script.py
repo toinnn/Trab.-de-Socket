@@ -4,11 +4,13 @@ from pyodide import to_js, create_proxy
 
 pipe = document.querySelector(".pipe")
 mario = document.querySelector(".mario")
-
+button_jump = document.querySelector(".button_jump")
 def if_stop(pos , Pipe):
     if pos <= 120 and float(mario.style.bottom[:-2]) <= 70 and pos >= 0 :
         Pipe.style.animation = "none"
         Pipe.style.left = f"{pos}px"
+        mario.src = "images//game-over.png"
+        mario.style.width = "75px"
 def jump(entity):
     var =js.window.getComputedStyle( mario).bottom
     pyscript.write('msg',var[:-2])
@@ -67,6 +69,7 @@ def main():
     # js.setInterval(to_js(lambda : pyscript.write("msg" ,pipe.offsetLeft )) , 50 )
 
     mario.addEventListener("click" , create_proxy(jogo.jump) )
+    button_jump.addEventListener("click" , create_proxy(jogo.jump) )
     js.setInterval(to_js(lambda : jogo.gravity(50 )) , 50 )
     
     # pipe.style.left = "250px"
