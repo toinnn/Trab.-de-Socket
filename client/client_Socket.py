@@ -1,5 +1,8 @@
 from socket import *
+# import codecs
+import webbrowser
 # import thread
+# from lxml import html
 
 server_Name = gethostbyname(gethostname())
 server_Port = 12000
@@ -36,4 +39,16 @@ new_response = "<!DOCTYPE html>\n<html lang=\"en\">"
 for i in response[2:]:
     new_response += i
 print(new_response)
+f = open("response.html", "w")
+f.write(new_response)
+f.close()
+path = "C:/Users/limaa/PythonProjects/VsCodePython/UFC/Redes/Trab. de Socket/"
+chrome_path = "C://Program Files (x86)//Google//Chrome//Application//chrome.exe %s"
+selenium_chrome_path = "C://tools//selenium//chromedriver.exe"
+
+
+# driver.get("file://"+path+"response.html")
+print("getou")
+
+webbrowser.get(chrome_path).open(path+"response.html")
 client.skt_Client.close()
