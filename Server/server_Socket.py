@@ -6,9 +6,10 @@ import threading
 
 class server_skt():
     def __init__(self , server_Name = gethostbyname(gethostname()) , server_Port = 12000) -> None:
+        # server_Name = '/path/to/my/socket'
         self.skt_Server  = socket(AF_INET , SOCK_STREAM)
         self.skt_Server.bind((server_Name , server_Port))
-        self.skt_Server.listen(1)
+        self.skt_Server.listen(3)
         
         print("Server Ligado ", server_Name )
     
@@ -28,7 +29,6 @@ class server_skt():
                     header   = ""
                     i = i.lstrip('/')
                     try :
-                        print("Vai Abrir o ark ",i)
                         file = open(i,"rb")
                         print("Abriu o ark")
                         response = file.read()
@@ -60,10 +60,11 @@ class server_skt():
         # listen()
         print("[Server Ouvindo...]")
         while True:
+            print("Entrou no while")
             client , addr = self.skt_Server.accept()
             print("Chega aki")
             td = threading.Thread(target = self.handle_request , args=(client, addr))
             td.start()
 
-server = server_skt()
+server = server_skt(server_Name = "0.0.0.0")
 server.start_server()
