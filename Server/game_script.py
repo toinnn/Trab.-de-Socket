@@ -104,7 +104,6 @@ def main():
     
 main()
 
-print("Meu deus , meu senhor , me ajudaaa.. Por favor !!")
 
 # while True:
 #     main()
