@@ -1,4 +1,5 @@
 from socket import *
+# import ssl
 # import codecs
 import webbrowser
 # from lxml import html
@@ -7,7 +8,7 @@ import time
 import os
 
 server_Name = gethostbyname(gethostname())
-server_Port = 12000
+server_Port = 80
 
 class client_skt() :
     def __init__(self) -> None:
@@ -32,8 +33,7 @@ class client_skt() :
         f.close()
         return new_response
     def __png_object_handle(self, filename , file):
-        new_response = b"" #file[1]#.decode('utf-8').replace("\r","")
-        # print(new_response)
+        new_response = b"" 
         for i in file[1:]:
             new_response += i + b"\n\n"#.replace(b"\r" , b"")
 
@@ -43,8 +43,7 @@ class client_skt() :
         f.close()
         return new_response
     def __css_object_handle(self, filename , file):
-        new_response = b"" #file[1]#.decode('utf-8').replace("\r","")
-        # print(new_response)
+        new_response = b"" 
         for i in file[1:]:
             new_response += i + b"\n\n"#.replace(b"\r" , b"")
 
@@ -54,47 +53,87 @@ class client_skt() :
         f.close()
         return new_response
     def __pyscript_object_handle(self, filename , file):
+        new_response = b"" 
+        for i in file[1:]:
+            new_response += i + b"\n\n"#.replace(b"\r" , b"")
+
+        if len(filename.split("/")) > 1 :
+            os.makedirs(os.path.dirname(filename), exist_ok=True)
+        
+        f = open(filename, "wb")
+        f.write(new_response[:-1])
+        f.close()
+        return new_response
+    def __outside_object_handle(self, filename , file):
+        """filename = filename.replace("https://" , "")
+        filename = filename.split("/")
+        new_filename = ""
+        print("Filename : " , filename)
+        for i in filename[1:]:
+            new_filename += "/"+ i
+        new_filename = new_filename[1:]"""
         new_response = b"" #file[1]#.decode('utf-8').replace("\r","")
         # print(new_response)
         for i in file[1:]:
             new_response += i + b"\n\n"#.replace(b"\r" , b"")
 
-        # os.makedirs(os.path.dirname(filename), exist_ok=True)
+        if len(filename.split("/")) > 1 :
+            os.makedirs(os.path.dirname(filename), exist_ok=True)
         f = open(filename, "wb")
         f.write(new_response[:-1])
         f.close()
+        print("Deu certo lá fora")
         return new_response
 
     def http_request(self,server_Name , server_Port , file = "index.html"):
-        client.connect( server_Name , server_Port)
-        request = f"GET /{file} HTTP/1.1\r\nHost:{server_Name}:{server_Port}\r\nConnection: keep-alive".encode()
+        self.connect( server_Name , server_Port)
+        print("file atual é o " , file)
+        if file.startswith("http://"):
+            pass
+            # file = file.replace("https://" , "")
+            # file = file.split("/")
+            # host = file[0]
+            # file_name = ""
+            # for i in file[1:] :
+            #     file_name += "/" + i
+            # file = file_name
+            # print("host : " , host ,"\nfile : " , file)
+
+            # context = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
+            # s = socket(AF_INET, SOCK_STREAM)
+            # self.skt_Client = context.wrap_socket(s, server_hostname=host)
+            # self.skt_Client.connect((host, 443))
+
+            # request = f"GET /{file} HTTP/1.1\r\nHost:{host}\r\nConnection: keep-alive".encode()
+        else :
+            request = f"GET /{file} HTTP/1.1\r\nHost:{server_Name}:{server_Port}\r\nConnection: keep-alive".encode()
         self.send(request)
 
         response = b''
         while True:
-            recv = client.recv(1024)
+            recv = self.recv(1024)
             if not recv:
                 break
             response += recv#.decode('utf-8') 
-        client.skt_Client.close()
+        self.skt_Client.close()
         self.skt_Client  = socket(AF_INET , SOCK_STREAM)
         
         # print(response)
         response = response.split(b"\n\n")
-        # print(response[:2])
         print(len(response))
-        print(response[0])
+        # print(response[0])
         
-        # new_response = "<!DOCTYPE html>\n<html lang=\"en\">"
-        # for i in response[2:]:
-            # new_response += i
-        if file.endswith(".html"):
+        
+        if file.startswith("https://") or file.startswith("http://") :
+            print("Entrou no https://")
+            new_response = self.__outside_object_handle( file , response)
+        elif file.endswith(".html"):
             new_response = self.__html_object_handle( file , response)
         elif file.endswith(".png") or file.endswith(".gif") :
             new_response = self.__png_object_handle( file , response)
         elif file.endswith(".css")  :
             new_response = self.__css_object_handle( file , response)
-        elif file.endswith(".py")  :
+        elif file.endswith(".py") or file.endswith(".js")  :
             new_response = self.__pyscript_object_handle( file , response)
         else:
             print("Formato de arquivo não suportado ainda")
@@ -104,12 +143,15 @@ class client_skt() :
     def http_request_all(self,server_Name , server_Port , file = "index.html") :
         http = self.http_request(server_Name , server_Port)
         soup = bs( http , 'html.parser')
-        # self.http_request(server_Name , server_Port ,
+        
         img_src       = [ self.http_request(server_Name , server_Port , i["src"].replace("\\","/") ) for i in soup.find_all('img')]
         py_script_src = [ self.http_request(server_Name , server_Port , i["src"].replace("\\","/") ) for i in soup.find_all('py-script')]
-        css_src       = [ self.http_request(server_Name , server_Port , "css/style.css".replace("\\","/") ) ]
-
-        # print(img_src[2])
+        link_src      = [ self.http_request(server_Name , server_Port , i["href"].replace("\\","/")) for i in soup.find_all("link")]
+        script_src    = [ self.http_request(server_Name , server_Port , i["src"].replace("\\","/") ) for i in soup.find_all("script")]
+        py_script_src +=[self.http_request(server_Name , server_Port , "pyscript/pyscript.py")]
+        img_src       +=[self.http_request(server_Name , server_Port , "images/game-over.png")]
+        
+        # print(script_src)
         # img = self.http_request(server_Name , server_Port , css_src[0])
         return http
         
@@ -121,29 +163,6 @@ client = client_skt()
 # client.connect( server_Name , server_Port)
 client.http_request_all(server_Name , server_Port , file = "index.html")
 
-"""request = f"GET /index.html HTTP/1.1\r\nHost:{server_Name}:{server_Port}\r\nConnection: keep-alive".encode()
-client.send(request)
-
-response = ''
-while True:
-    recv = client.recv(1024)
-    if not recv:
-        break
-    response += recv.decode('utf-8') 
-
-# print(response)
-response = response.split("\r")
-new_response = "<!DOCTYPE html>\n<html lang=\"en\">"
-for i in response[2:]:
-    new_response += i
-print(new_response)
-f = open("response.html", "w")
-f.write(new_response)
-f.close()"""
-# soup = bs(new_response, 'html.parser')
-# img_src = [i["src"] for i in soup.find_all('img')]
-# py_script_src = [i["src"] for i in soup.find_all('py-script')]
-# css_src = ["css//style.css"]
 
 path = "C:/Users/limaa/PythonProjects/VsCodePython/UFC/Redes/Trab. de Socket/"
 chrome_path = "C://Program Files (x86)//Google//Chrome//Application//chrome.exe %s"

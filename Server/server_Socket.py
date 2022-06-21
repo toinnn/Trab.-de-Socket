@@ -5,7 +5,7 @@ import threading
 # addr = ()
 
 class server_skt():
-    def __init__(self , server_Name = gethostbyname(gethostname()) , server_Port = 12000) -> None:
+    def __init__(self , server_Name = gethostbyname(gethostname()) , server_Port = 80) -> None:
         # server_Name = '/path/to/my/socket'
         self.skt_Server  = socket(AF_INET , SOCK_STREAM)
         self.skt_Server.bind((server_Name , server_Port))
